@@ -12,7 +12,6 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY,COMSUMER_SECRET)
 auth.set_access_token(ACCESS_KEY,ACCESS_SECRET)
 api = tweepy.API(auth)
 
-
 FILE_NAME = 'last_seen_id.txt'
 
 def retrieve_last_seen_id(file_name):
@@ -27,24 +26,21 @@ def store_last_seen_id(last_seen_id,file_name):
     f_write.close()
     return
 
-def respondingTweets():
-    print("Responding ")
+def searchTweets():
+    print("searching")
     last_seen_id = retrieve_last_seen_id(FILE_NAME)
-
-    mentions = api.mentions_timeline(last_seen_id,tweet_mode='extended')
+    mentions = api.search_30_day(environment_name="dev",query="Land of the Lustrous")
 
     for mention in reversed(mentions):
-        last_seen_id = mention.id
-        store_last_seen_id(last_seen_id,FILE_NAME)
-        #print(mention)
-        print(str(mention.id)+" - "+mention.full_text)
-        if '#helloword' in mention.full_text.lower():
-            print(" achei hello word")
-            print("responding back")
-            api.update_status('@'+ mention.user.screen_name+'#HelloWord vai toma no cu',mention.id)
+        if 'date' in mention.text.lower():
+            if not mention.id == last_seen_id:
+                last_seen_id = mention.id
+                store_last_seen_id(last_seen_id,FILE_NAME)
+                myId = api.get_user(screen_name="@rafael_crespim")
+                api.send_direct_message(recipient_id=myId.id,text="@"+mention.user.screen_name+" - "+mention.text)
 
 while True:
-    respondingTweets()
-    time.sleep(2)
+    searchTweets()
+    time.sleep(15)
 
 
